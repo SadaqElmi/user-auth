@@ -4,8 +4,7 @@ import jwt from "jsonwebtoken";
 const SECRET_KEY = process.env.SECRET_KEY || "Sadaa";
 
 // Generate a JWT token
-const generateToken = (id: string): string => {
-  return jwt.sign({ id }, SECRET_KEY, { expiresIn: "10m" });
+const generateToken = (id: string, role: string): string => {
+  return jwt.sign({ id, role }, SECRET_KEY, { expiresIn: "10m" });
 };
-
 export { generateToken };
