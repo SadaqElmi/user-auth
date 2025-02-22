@@ -16,7 +16,8 @@ interface DecodedToken {
 const Header = () => {
   const [image, setImage] = useState<string | null>(null);
   const [role, setRole] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>("user");
+  const [userId, setUserId] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
 
   function decodeToken(token: string) {
     try {
@@ -29,6 +30,7 @@ const Header = () => {
     }
   }
 
+  // Fetch logged-in user details
   useEffect(() => {
     const token = getCookie("token");
     if (token) {
@@ -36,6 +38,15 @@ const Header = () => {
       if (decoded) {
         setRole(decoded.role);
         setUserId(decoded.id);
+
+        // Fetch user data
+        axios
+          .get(`/api/users/${decoded.id}`)
+          .then((res) => {
+            setImage(res.data.profileImage || "https://github.com/shadcn.png");
+            setUserName(res.data.name);
+          })
+          .catch((err) => console.error("Error fetching user:", err));
       }
     }
   }, []);
@@ -61,14 +72,16 @@ const Header = () => {
     setRole(null);
     setUserId(null);
     setImage(null);
+    setUserName(null);
     window.location.href = "/login";
   };
 
   return (
     <div className="flex justify-around my-5">
-      <h1 className="text-xl font-bold">Welcome to User Auth</h1>
+      <h1 className="text-xl font-bold">Welcome {userName || "Guest"}</h1>
+
       <ul className="flex gap-4 items-center">
-        {role && (
+        {role ? (
           <>
             <li>
               <Link href="/">
@@ -85,17 +98,20 @@ const Header = () => {
                 Logout
               </Button>
             </li>
+
+            {/* Current User Profile Image */}
             <li className="flex gap-4 items-center">
               <Avatar>
                 <AvatarImage
                   src={image || "https://github.com/shadcn.png"}
                   alt="Profile"
-                  className="object-cover"
+                  className="aspect-square h-full w-full object-cover"
                 />
-                <AvatarFallback>CN</AvatarFallback>
+                <AvatarFallback>{userName ? userName[0] : "U"}</AvatarFallback>
               </Avatar>
               <input type="file" onChange={handleImageChange} />
             </li>
+
             {role === "admin" && (
               <li>
                 <Link href="/admin">
@@ -104,8 +120,7 @@ const Header = () => {
               </li>
             )}
           </>
-        )}
-        {!role && (
+        ) : (
           <>
             <li>
               <Link href="/login">

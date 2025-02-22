@@ -30,13 +30,21 @@ export async function POST(request: Request) {
         { status: 401 }
       );
     }
+
     const token = generateToken(user._id, user.role);
+
     // Set token in cookie
     const response = NextResponse.json({
       message: "Login successful",
       token,
-      user: { id: user._id, role: user.role, name: user.name },
+      user: {
+        id: user._id,
+        role: user.role,
+        name: user.name,
+        profileImage: user.profileImage || "https://github.com/shadcn.png",
+      },
     });
+
     response.cookies.set("token", token, {
       httpOnly: false,
       secure: process.env.NODE_ENV === "production",
